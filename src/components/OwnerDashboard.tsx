@@ -38,6 +38,22 @@ interface OwnerDashboardProps {
   onLogout: () => void;
 }
 
+const HIDDEN_NOTIFICATIONS_KEY = 'hiddenNotifications';
+function getHiddenNotifications() {
+  try {
+    return JSON.parse(localStorage.getItem(HIDDEN_NOTIFICATIONS_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+function addHiddenNotification(id) {
+  const hidden = getHiddenNotifications();
+  if (!hidden.includes(id)) {
+    hidden.push(id);
+    localStorage.setItem(HIDDEN_NOTIFICATIONS_KEY, JSON.stringify(hidden));
+  }
+}
+
 const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'accounts' | 'inventory' | 'reports' | 'logs' | 'settings'>('overview');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -88,7 +104,7 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ user, onLogout }) => {
 
     // Subscribe to notifications
     const unsubscribe = subscribeToNotifications(user.role, (notificationsData) => {
-      setNotifications(notificationsData);
+      setNotifications(notificationsData.filter(n => !getHiddenNotifications().includes(n.id)));
     });
 
     return () => unsubscribe();
@@ -574,7 +590,7 @@ const OwnerDashboard: React.FC<OwnerDashboardProps> = ({ user, onLogout }) => {
                               </div>
                               <button
                                 className="ml-2 text-gray-400 hover:text-red-600"
-                                onClick={e => { e.stopPropagation(); setNotifications(notifications.filter(n => n.id !== notification.id)); }}
+                                onClick={e => { e.stopPropagation(); addHiddenNotification(notification.id); setNotifications(notifications.filter(n => n.id !== notification.id)); }}
                                 title="Remove notification"
                               >
                                 ×

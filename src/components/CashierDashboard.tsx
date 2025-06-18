@@ -29,6 +29,22 @@ interface CashierDashboardProps {
   onLogout: () => void;
 }
 
+const HIDDEN_NOTIFICATIONS_KEY = 'hiddenNotifications';
+function getHiddenNotifications() {
+  try {
+    return JSON.parse(localStorage.getItem(HIDDEN_NOTIFICATIONS_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+function addHiddenNotification(id) {
+  const hidden = getHiddenNotifications();
+  if (!hidden.includes(id)) {
+    hidden.push(id);
+    localStorage.setItem(HIDDEN_NOTIFICATIONS_KEY, JSON.stringify(hidden));
+  }
+}
+
 const CashierDashboard: React.FC<CashierDashboardProps> = ({ user, onLogout }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,7 +63,7 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ user, onLogout }) =
     });
 
     const unsubscribeNotifications = subscribeToNotifications(user.role, (notificationsData) => {
-      setNotifications(notificationsData);
+      setNotifications(notificationsData.filter(n => !getHiddenNotifications().includes(n.id)));
     });
 
     return () => {
@@ -312,7 +328,7 @@ const CashierDashboard: React.FC<CashierDashboardProps> = ({ user, onLogout }) =
                               </div>
                               <button
                                 className="ml-2 text-gray-400 hover:text-red-600"
-                                onClick={e => { e.stopPropagation(); setNotifications(notifications.filter(n => n.id !== notification.id)); }}
+                                onClick={e => { e.stopPropagation(); addHiddenNotification(notification.id); setNotifications(notifications.filter(n => n.id !== notification.id)); }}
                                 title="Remove notification"
                               >
                                 ×

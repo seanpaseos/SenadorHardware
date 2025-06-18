@@ -207,7 +207,7 @@ export const addStockMovement = async (movement: Omit<StockMovement, 'id' | 'tim
       addNotification({
         type: 'stock-update',
         title: 'Stock Updated',
-        message: `${movement.productName} stock ${movement.type === 'in' ? 'increased' : 'decreased'} by ${movement.quantity} units by ${movement.checkerName}`,
+        message: `${movement.productName} stock ${movement.type === 'in' ? 'increased' : 'decreased'} by ${movement.quantity} units by ${movement.checkerName}. Notes: ${movement.reason || 'No notes provided.'}`,
         isRead: false,
         userId: null,
         targetRoles: ['owner']
